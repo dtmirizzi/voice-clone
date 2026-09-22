@@ -38,6 +38,49 @@ voice-clone speak sam -f blog-post.txt --speed 0.95 --normalize
 voice-clone add morgan "https://youtube.com/..." --start 45 --duration 20
 ```
 
+## Examples
+
+### Narrate a blog post
+
+```bash
+# Clone Sam Rockwell's voice from his White Lotus monologue
+voice-clone add sam "https://www.youtube.com/watch?v=iKfDTyE0zTA" --start 6
+
+# Generate audio — auto-chunks long text, slows to natural pace, evens volume
+voice-clone speak sam -f post.html --speed 0.95 --normalize -o post-audio.mp3
+# Duration: 09:45  Saved to post-audio.mp3
+```
+
+### Build a voice library
+
+```bash
+voice-clone add keanu "https://www.youtube.com/watch?v=yqEFgIv-aqM"
+voice-clone add sam "https://www.youtube.com/watch?v=iKfDTyE0zTA" --start 6
+voice-clone add morgan "https://www.youtube.com/watch?v=..." --start 60 --duration 20
+
+voice-clone list
+# Cached voices:
+#   keanu                 "Knock Knock" monologue - Keanu Reeves         170KB
+#   morgan                Morgan Freeman interview clip                    220KB
+#   sam                   Sam Rockwell monologue about being an Asian...   180KB
+```
+
+### Batch generate from a script
+
+```bash
+# Read lines from a file, speak each one
+while IFS= read -r line; do
+  voice-clone speak sam "$line" -o "line-$((i++)).mp3"
+done < script.txt
+```
+
+### Generate with raw text (skip HTML stripping)
+
+```bash
+# Useful when your file has intentional formatting you want preserved
+voice-clone speak sam -f markdown-post.md --raw
+```
+
 ## Features
 
 - **YouTube voice cloning** — download any video, trim a clean 15s clip, use it as a voice reference
