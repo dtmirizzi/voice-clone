@@ -1,0 +1,30 @@
+[project]
+name = "voice-clone"
+version = "1.0.0"
+description = "Clone voices from YouTube and generate speech via OpenRouter Voxtral"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.9"
+dependencies = []
+
+[tool.setuptools]
+py-modules = ["cli"]
+
+keywords = ["tts", "voice-clone", "openrouter", "voxtral", "youtube", "speech"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+]
+
+[project.scripts]
+voice-clone = "cli:main"
+
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.uv]
+dev-dependencies = []
