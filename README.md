@@ -5,8 +5,11 @@ Clone a voice from any YouTube video and generate speech with it via OpenRouter'
 ## Install
 
 ```bash
-uv tool install voice-clone
-# or: pip install voice-clone
+# Direct from GitHub (no PyPI needed)
+uv tool install git+https://github.com/dtmirizzi/voice-clone.git
+
+# Or via pip
+pip install git+https://github.com/dtmirizzi/voice-clone.git
 ```
 
 Requires `ffmpeg` and `yt-dlp` on your PATH:
