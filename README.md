@@ -74,6 +74,29 @@ while IFS= read -r line; do
 done < script.txt
 ```
 
+### Pipe text from stdin
+
+```bash
+# Pipe any text directly to the speakers
+echo "Server deployment complete" | voice-clone speak sam --play
+
+# Pipe from another command
+curl -s https://example.com/article.txt | voice-clone speak sam --play
+
+# Read a file, pipe it in
+cat meeting-notes.txt | voice-clone speak sam --speed 0.95 --normalize
+```
+
+### Play directly to speakers
+
+```bash
+# Generate and play — no file saved
+voice-clone speak sam "Dinner is ready" --play
+
+# From file, normalized and slowed, straight to speakers
+voice-clone speak sam -f announcement.txt --speed 0.92 --normalize --play
+```
+
 ### Generate with raw text (skip HTML stripping)
 
 ```bash
@@ -85,6 +108,8 @@ voice-clone speak sam -f markdown-post.md --raw
 
 - **YouTube voice cloning** — download any video, trim a clean 15s clip, use it as a voice reference
 - **Auto-chunking** — long text (>1200 chars) is split into sections, each generated fresh, then concatenated. Prevents the voice from losing energy at the end of long generations
+- **Pipe-friendly** — reads from stdin when text is piped in: `echo "hello" | voice-clone speak sam --play`
+- **Speaker output** — `--play` sends audio directly to system speakers via afplay (macOS), ffplay, or mpv
 - **Speed control** — `--speed 0.95` for natural pacing, applies ffmpeg atempo with pitch correction
 - **Loudness normalization** — `--normalize` applies loudnorm (-16 LUFS) for consistent volume
 - **Text preprocessing** — auto-strips HTML tags, footnote references, and normalizes spacing for better TTS

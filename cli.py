@@ -6,6 +6,7 @@ import base64
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 import sys
 import urllib.request
@@ -121,7 +122,6 @@ def cmd_remove(args):
     """Remove a cached voice."""
     voice_dir = get_voice_dir(args.name)
     if voice_dir.exists():
-        import shutil
         shutil.rmtree(voice_dir)
         print(f"Removed voice '{args.name}'")
     else:
@@ -270,7 +270,6 @@ def _postprocess(input_path, output_path, speed, normalize):
     """Apply speed adjustment and loudness normalization via ffmpeg."""
     if not speed and not normalize:
         if output_path and output_path != input_path:
-            import shutil
             shutil.copy(input_path, output_path)
         return output_path or input_path
 
@@ -335,13 +334,26 @@ def cmd_speak(args):
         raw = Path(args.file).read_text().strip()
         text = _clean_text(raw) if not args.raw else raw
 
+    # Read from stdin if piped and no text provided
+    if not text and not sys.stdin.isatty():
+        raw = sys.stdin.read().strip()
+        text = _clean_text(raw) if not args.raw else raw
+
     if not text:
         print("No text provided.")
         sys.exit(1)
 
-    output = Path(args.output) if args.output else Path(f"/tmp/{args.name}_speech.mp3")
     speed = float(args.speed) if args.speed else None
     normalize = args.normalize
+    play = args.play
+
+    # When playing, use a temp file
+    if play and not args.output:
+        output = Path(f"/tmp/{args.name}_speech.mp3")
+    elif args.output:
+        output = Path(args.output)
+    else:
+        output = Path(f"/tmp/{args.name}_speech.mp3")
 
     print(f"Generating speech for '{args.name}'...")
     path = generate_speech(voice_dir, text, output, speed=speed, normalize=normalize)
@@ -350,7 +362,29 @@ def cmd_speak(args):
     mins = int(duration // 60)
     secs = int(duration % 60)
     print(f"  Duration: {mins:02d}:{secs:02d}")
-    print(f"  Saved to {path}")
+
+    if play:
+        print(f"  Playing...")
+        _play_audio(path)
+    else:
+        print(f"  Saved to {path}")
+
+
+def _play_audio(path):
+    """Play audio through system speakers."""
+    path_str = str(path)
+    # Try platform-specific players
+    if shutil.which("afplay"):
+        subprocess.run(["afplay", path_str])
+    elif shutil.which("ffplay"):
+        subprocess.run(["ffplay", "-nodisp", "-autoexit", path_str],
+                       capture_output=True)
+    elif shutil.which("mpv"):
+        subprocess.run(["mpv", "--no-video", path_str], capture_output=True)
+    elif shutil.which("play"):
+        subprocess.run(["play", path_str], capture_output=True)
+    else:
+        print("  Warning: no audio player found (install ffplay, mpv, or use --output)")
 
 
 def main():
@@ -380,6 +414,7 @@ def main():
     p_speak.add_argument("--speed", "-s", help="Playback speed multiplier (e.g. 0.95 for slower)")
     p_speak.add_argument("--normalize", "-n", action="store_true", help="Apply loudness normalization (loudnorm)")
     p_speak.add_argument("--raw", action="store_true", help="Skip text preprocessing (don't strip HTML/footnotes)")
+    p_speak.add_argument("--play", "-p", action="store_true", help="Play audio directly through speakers")
 
     args = parser.parse_args()
 
